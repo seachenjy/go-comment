@@ -1,0 +1,6 @@
+db: mongo
+port: 8800
+mongo:
+ url: mongodb://10.10.0.204:27017
+ poolsize: 100
+ dbname: comment
