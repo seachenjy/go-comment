@@ -22,7 +22,8 @@ type Comment struct {
 	ID       primitive.ObjectID `bson:"_id"`       //comment id
 	Parent   primitive.ObjectID `bson:"parent"`    //parent comment id, reply comment
 	SourceID SourceID           `bson:"source_id"` //comment source id
-	Content  []byte             `bson:"content"`   //comment content
+	Content  string             `bson:"content"`   //comment content
+	Grade    float32            `bson:"grade"`     //source grade .5 - 5
 	Ctime    time.Time          `bson:"c_time"`    //create time
 	Utime    time.Time          `bson:"u_time"`    //update time
 	User     `bson:",inline"`

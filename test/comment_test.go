@@ -28,8 +28,24 @@ func TestAddComment(t *testing.T) {
 	}
 	t.Logf("%+v", config.Cfg)
 	c := dao.New()
+	c.SourceID = "abc"
 	mongo := dao.NewMongo(&config.Cfg)
 	if ok := c.Save(mongo); !ok {
 		t.Error("save error")
 	}
+}
+
+func TestGetComment(t *testing.T) {
+	err := config.Init("../config.yaml")
+	if err != nil {
+		t.Error(err)
+	}
+	t.Logf("%+v", config.Cfg)
+
+	mongo := dao.NewMongo(&config.Cfg)
+
+	list := mongo.GetComments("abc", 0, 10)
+
+	t.Logf("%++v", list[0])
+
 }

@@ -42,10 +42,17 @@ func (m *MongoService) GetComments(s SourceID, offset, limit int64) []*Comment {
 		"c_time": -1,
 	})
 	res, err := m.db.Collection("comments").Find(ctx, bson.M{
-		"source_id": s,
+		"source_id": bson.M{"$eq": s},
 	}, opts)
 	if err == nil {
-		res.All(ctx, cs)
+		var c Comment
+		for res.Next(ctx) {
+			if err := res.Decode(&c); err != nil {
+				panic(err)
+			} else {
+				cs = append(cs, &c)
+			}
+		}
 	}
 	return cs
 }
