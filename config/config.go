@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"os"
 	"sync"
+	"time"
 
 	"gopkg.in/yaml.v2"
 )
@@ -13,6 +14,14 @@ type Config struct {
 	Mongo `yaml:"mongo"`
 	Port  int    `yaml:"port"`
 	Db    string `yaml:"db"`
+	LOG   `yaml:"log"`
+}
+
+//LOG config
+type LOG struct {
+	Path         string        `yaml:"path"`
+	RotationTime time.Duration `yaml:"rotation"`
+	MaxAge       time.Duration `yaml:"age"`
 }
 
 //Mongo config
@@ -48,7 +57,8 @@ func Init(configpath string) error {
 	}
 	err = yaml.Unmarshal(bytes, &Cfg)
 	if err == nil {
-		//纳秒转换成秒
+		Cfg.LOG.MaxAge = Cfg.LOG.MaxAge * 3600e9
+		Cfg.LOG.RotationTime = Cfg.LOG.RotationTime * 1e9
 	}
 	return err
 }

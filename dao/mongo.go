@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/seachenjy/go-comment/config"
+	"github.com/seachenjy/go-comment/log"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -48,7 +49,7 @@ func (m *MongoService) GetComments(s SourceID, offset, limit int64) []*Comment {
 		var c Comment
 		for res.Next(ctx) {
 			if err := res.Decode(&c); err != nil {
-				panic(err)
+				log.GetLogger().Error(err)
 			} else {
 				cs = append(cs, &c)
 			}

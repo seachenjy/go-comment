@@ -4,3 +4,7 @@ mongo:
  url: mongodb://10.10.0.204:27017
  poolsize: 100
  dbname: comment
+log:
+ path: ./logs
+ rotation: 86400 #log rotation time second
+ age: 72 #log life max age time hours

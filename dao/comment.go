@@ -19,21 +19,21 @@ type SourceID string
 
 //Comment mongo fields
 type Comment struct {
-	ID       primitive.ObjectID `bson:"_id"`       //comment id
-	Parent   primitive.ObjectID `bson:"parent"`    //parent comment id, reply comment
-	SourceID SourceID           `bson:"source_id"` //comment source id
-	Content  string             `bson:"content"`   //comment content
-	Grade    float32            `bson:"grade"`     //source grade .5 - 5
-	Ctime    time.Time          `bson:"c_time"`    //create time
-	Utime    time.Time          `bson:"u_time"`    //update time
-	User     `bson:",inline"`
+	ID       primitive.ObjectID `bson:"_id"`                        //comment id
+	Parent   primitive.ObjectID `bson:"parent" json:"parent"`       //parent comment id, reply comment
+	SourceID SourceID           `bson:"source_id" json:"source_id"` //comment source id
+	Content  string             `bson:"content" json:"content"`     //comment content
+	Grade    float32            `bson:"grade" json:"grade"`         //source grade .5 - 5
+	Ctime    time.Time          `bson:"c_time" json:"c_time"`       //create time
+	Utime    time.Time          `bson:"u_time" json:"u_time"`       //update time
+	User     `bson:",inline" json:",inline"`
 }
 
 //User comment user
 type User struct {
-	Avatar    string `bson:"avatar"`
-	NickName  string `bson:"nick_name"`
-	IPAddress string `bson:"ip_address"`
+	Avatar    string `bson:"avatar" json:"avatar"`
+	NickName  string `bson:"nick_name" json:"nick_name"`
+	IPAddress string `bson:"ip_address" json:"ip_address"`
 }
 
 //New build new comment

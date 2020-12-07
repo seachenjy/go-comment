@@ -3,6 +3,7 @@ package test
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/seachenjy/go-comment/config"
 	"github.com/seachenjy/go-comment/dao"
@@ -48,4 +49,10 @@ func TestGetComment(t *testing.T) {
 
 	t.Logf("%++v", list[0])
 
+}
+
+func TestTimeafter(t *testing.T) {
+	t.Log(time.Now().UTC())
+	time := time.Unix(time.Now().Unix()-5, 0).UTC()
+	t.Log(time)
 }
