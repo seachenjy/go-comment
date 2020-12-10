@@ -7,6 +7,7 @@ import (
 
 	"github.com/seachenjy/go-comment/config"
 	"github.com/seachenjy/go-comment/dao"
+	"golang.org/x/time/rate"
 )
 
 func TestComment(t *testing.T) {
@@ -56,4 +57,18 @@ func TestTimeafter(t *testing.T) {
 	t2 := time.Unix(time.Now().Unix()-5, 0).UTC()
 	out := time.Now().Sub(t2)
 	t.Log(out.Seconds())
+}
+
+func TestRate(t *testing.T) {
+	l := rate.NewLimiter(20, 5)
+	// c, _ := context.WithCancel(context.TODO())
+	fmt.Println(l.Limit(), l.Burst())
+	for i := 0; i < 100; i++ {
+		if l.Allow() {
+			fmt.Println(time.Now().Format("2016-01-02 15:04:05.000"))
+		} else {
+			fmt.Println("time out")
+		}
+		time.Sleep(20 * time.Millisecond)
+	}
 }

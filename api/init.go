@@ -40,12 +40,11 @@ func Init() {
 	if config.Cfg.Db == "mongo" {
 		d = dao.NewMongo(&config.Cfg)
 	}
-
+	go ipLimitTask()
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
 	pprof.Register(r)
-	r.Use(iplimit, logger)
-
+	r.Use(logger)
 	r.Use(gzip.Gzip(gzip.DefaultCompression))
 	r.POST("/comment/save", saveComment)
 	r.GET("/comments", comments)
@@ -58,6 +57,9 @@ func Init() {
 
 //save comment api
 func saveComment(c *gin.Context) {
+	if !iplimit(c) {
+		return
+	}
 	comment := dao.New()
 	if err := c.BindJSON(comment); err != nil {
 		throwError(1001, c)

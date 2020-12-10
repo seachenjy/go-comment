@@ -2,65 +2,45 @@ package api
 
 import (
 	"sync"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/time/rate"
 )
 
-// IPRateLimiter .
-type IPRateLimiter struct {
-	ips map[string]*rate.Limiter
-	mu  *sync.RWMutex
-	r   rate.Limit
-	b   int
-}
+var allowIPPool = &sync.Map{}
 
-// NewIPRateLimiter .
-func NewIPRateLimiter(r rate.Limit, b int) *IPRateLimiter {
-	i := &IPRateLimiter{
-		ips: make(map[string]*rate.Limiter),
-		mu:  &sync.RWMutex{},
-		r:   r,
-		b:   b,
+//ipLimitTask clear cache
+func ipLimitTask() {
+	l := rate.NewLimiter(20, 5)
+	for {
+		if l.Allow() {
+			allowIPPool.Range(func(key, value interface{}) bool {
+				ip := key.(string)
+				age := value.(time.Time)
+				if time.Now().Sub(age).Seconds() > 5 {
+					allowIPPool.Delete(ip)
+				}
+				return true
+			})
+		}
 	}
-
-	return i
 }
 
-// AddIP
-func (i *IPRateLimiter) AddIP(ip string) *rate.Limiter {
-	i.mu.Lock()
-	defer i.mu.Unlock()
+func iplimit(c *gin.Context) bool {
+	ip := c.ClientIP()
+	if age, ok := allowIPPool.Load(ip); ok {
+		age := age.(time.Time)
+		if time.Now().Sub(age).Seconds() < 5 {
+			allowIPPool.Store(ip, time.Now())
+			throwError(1005, c)
+			return false
+		}
+		allowIPPool.Store(ip, time.Now())
+		return true
 
-	limiter := rate.NewLimiter(i.r, i.b)
-
-	i.ips[ip] = limiter
-
-	return limiter
-}
-
-// GetLimiter
-func (i *IPRateLimiter) GetLimiter(ip string) *rate.Limiter {
-	i.mu.Lock()
-	limiter, exists := i.ips[ip]
-
-	if !exists {
-		i.mu.Unlock()
-		return i.AddIP(ip)
 	}
+	allowIPPool.Store(ip, time.Now())
+	return true
 
-	i.mu.Unlock()
-
-	return limiter
-}
-
-var limiter = NewIPRateLimiter(1, 5)
-
-func iplimit(c *gin.Context) {
-	limiter := limiter.GetLimiter(c.ClientIP())
-	if !limiter.Allow() {
-		throwError(1005, c)
-		return
-	}
-	c.Next()
 }
