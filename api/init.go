@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/seachenjy/go-comment/config"
 	"github.com/seachenjy/go-comment/dao"
+	"github.com/seachenjy/go-comment/log"
 )
 
 var (
@@ -32,7 +33,7 @@ func Init() {
 	r.GET("/comments", comments)
 	err := r.Run(fmt.Sprintf(`127.0.0.1:%d`, config.Cfg.Port))
 	if err != nil {
-		panic(err)
+		log.GetLogger().Error(err)
 	}
 }
 

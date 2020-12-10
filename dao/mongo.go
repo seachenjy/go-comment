@@ -2,6 +2,7 @@ package dao
 
 import (
 	"context"
+	"fmt"
 	"sync"
 
 	"github.com/seachenjy/go-comment/config"
@@ -19,13 +20,14 @@ var (
 
 //MongoService the db service
 type MongoService struct {
-	db *mongo.Database
+	db         *mongo.Database
+	collection *mongo.Collection
 }
 
 //AddComment add comment to mongodb
 func (m *MongoService) AddComment(c *Comment) bool {
 	ctx := context.Background()
-	_, err := m.db.Collection("comments").InsertOne(ctx, c)
+	_, err := m.collection.InsertOne(ctx, c)
 	if err != nil {
 		return false
 	}
@@ -42,7 +44,7 @@ func (m *MongoService) GetComments(s SourceID, offset, limit int64) []*Comment {
 	opts.SetSort(bson.M{
 		"c_time": -1,
 	})
-	res, err := m.db.Collection("comments").Find(ctx, bson.M{
+	res, err := m.collection.Find(ctx, bson.M{
 		"source_id": bson.M{"$eq": s},
 	}, opts)
 	if err == nil {
@@ -69,12 +71,42 @@ func NewMongo(cfg *config.Config) *MongoService {
 	clientOptions := options.Client().ApplyURI(cfg.Mongo.MongoURL).SetMaxPoolSize(cfg.Mongo.Poolsize)
 	conn, err := mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {
-		panic(err)
+		log.GetLogger().Error(err)
+		return nil
 	}
 	if err := conn.Ping(context.TODO(), nil); err != nil {
-		panic(err)
+		log.GetLogger().Error(err)
+		return nil
 	}
 	ss = &MongoService{}
+
 	ss.db = conn.Database(cfg.Mongo.DbName)
+
+	//test table exists
+	ctx := context.Background()
+	result, err := ss.db.ListCollectionNames(ctx, bson.M{"name": cfg.Mongo.TableName})
+	if err != nil {
+		panic(err)
+	}
+	if len(result) <= 0 {
+		fmt.Printf("create document: '%s' in mongo database: '%s'", cfg.Mongo.TableName, cfg.Mongo.DbName)
+		sourceIndex := mongo.IndexModel{
+			Keys:    bson.M{"source_id": -1},
+			Options: nil,
+		}
+		ctimeIndex := mongo.IndexModel{
+			Keys:    bson.M{"c_time": -1},
+			Options: nil,
+		}
+		parentIndex := mongo.IndexModel{
+			Keys:    bson.M{"parent": -1},
+			Options: nil,
+		}
+		_, err := ss.db.Collection(cfg.Mongo.TableName).Indexes().CreateMany(ctx, []mongo.IndexModel{sourceIndex, ctimeIndex, parentIndex})
+		if err != nil {
+			panic(err)
+		}
+	}
+	ss.collection = ss.db.Collection(cfg.Mongo.TableName)
 	return ss
 }

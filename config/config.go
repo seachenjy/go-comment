@@ -26,9 +26,10 @@ type LOG struct {
 
 //Mongo config
 type Mongo struct {
-	MongoURL string `yaml:"url"`
-	Poolsize uint64 `yaml:"poolsize"`
-	DbName   string `yaml:"dbname"`
+	MongoURL  string `yaml:"url"`
+	Poolsize  uint64 `yaml:"poolsize"`
+	DbName    string `yaml:"dbname"`
+	TableName string `yaml:"tablename"`
 }
 
 var (
