@@ -53,6 +53,7 @@ func TestGetComment(t *testing.T) {
 
 func TestTimeafter(t *testing.T) {
 	t.Log(time.Now().UTC())
-	time := time.Unix(time.Now().Unix()-5, 0).UTC()
-	t.Log(time)
+	t2 := time.Unix(time.Now().Unix()-5, 0).UTC()
+	out := time.Now().Sub(t2)
+	t.Log(out.Seconds())
 }

@@ -25,6 +25,7 @@ var (
 		1002: "content too short",
 		1003: "source id can't be empty",
 		1004: "save comment error",
+		1005: "timeout",
 	}
 )
 
@@ -39,10 +40,12 @@ func Init() {
 	if config.Cfg.Db == "mongo" {
 		d = dao.NewMongo(&config.Cfg)
 	}
+
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
 	pprof.Register(r)
-	r.Use(logger)
+	r.Use(iplimit, logger)
+
 	r.Use(gzip.Gzip(gzip.DefaultCompression))
 	r.POST("/comment/save", saveComment)
 	r.GET("/comments", comments)
@@ -76,9 +79,27 @@ func saveComment(c *gin.Context) {
 	c.JSON(200, comment)
 }
 
+type commentsAPIParams struct {
+	dao.SourceID `form:"source_id"`
+	Offset       int64 `form:"offset"`
+	Limit        int64 `form:"limit"`
+}
+
 //comments list api
 func comments(c *gin.Context) {
-
+	apiparams := &commentsAPIParams{}
+	if err := c.BindQuery(apiparams); err != nil {
+		throwError(1001, c)
+		return
+	}
+	if apiparams.SourceID == "" {
+		throwError(1003, c)
+		return
+	}
+	comments := dao.Get(apiparams.SourceID, d, apiparams.Offset, apiparams.Limit)
+	c.JSON(200, gin.H{
+		"data": comments,
+	})
 }
 
 func throwError(code int, c *gin.Context) {
@@ -105,5 +126,6 @@ func logger(c *gin.Context) {
 		"client_ip":    clientIP,
 		"req_method":   reqMethod,
 		"req_uri":      reqURL,
+		"header":       c.Request.Header,
 	}).Info()
 }
