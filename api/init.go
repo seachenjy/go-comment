@@ -74,6 +74,7 @@ func saveComment(c *gin.Context) {
 		return
 	}
 	comment.IPAddress = c.ClientIP()
+
 	if ok := comment.Save(d); !ok {
 		throwError(1004, c)
 		return

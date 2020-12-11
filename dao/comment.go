@@ -1,6 +1,7 @@
 package dao
 
 import (
+	"html"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -46,6 +47,8 @@ func New() *Comment {
 
 //Save save comment to mongo
 func (c *Comment) Save(d Dao) bool {
+	c.Avatar = html.EscapeString(c.Avatar)
+	c.Content = html.EscapeString(c.Content)
 	return d.AddComment(c)
 }
 
