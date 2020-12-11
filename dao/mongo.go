@@ -60,6 +60,28 @@ func (m *MongoService) GetComments(s SourceID, offset, limit int64) []*Comment {
 	return cs
 }
 
+//Batch static comment
+func (m *MongoService) Batch(s SourceID) {
+	total := 0
+	var star float32
+	ctx := context.Background()
+	opts := &options.FindOptions{}
+	res, err := m.collection.Find(ctx, bson.M{
+		"source_id": bson.M{"$eq": s},
+	}, opts)
+	if err != nil {
+		var c Comment
+		for res.Next(ctx) {
+			if err := res.Decode(&c); err != nil {
+				log.GetLogger().Error(err)
+			} else {
+				total++
+				star = star + c.Grade
+			}
+		}
+	}
+}
+
 //NewMongo return a new mongodb connect service
 func NewMongo(cfg *config.Config) *MongoService {
 	lock.Lock()
