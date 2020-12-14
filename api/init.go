@@ -99,9 +99,13 @@ func comments(c *gin.Context) {
 		throwError(1003, c)
 		return
 	}
-	comments := dao.Get(apiparams.SourceID, d, apiparams.Offset, apiparams.Limit)
+	comments, aggregate := dao.Get(apiparams.SourceID, d, apiparams.Offset, apiparams.Limit)
+
 	c.JSON(200, gin.H{
-		"data": comments,
+		"data": gin.H{
+			"comments":  comments,
+			"aggregate": aggregate,
+		},
 	})
 }
 

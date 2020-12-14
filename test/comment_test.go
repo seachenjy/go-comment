@@ -72,3 +72,16 @@ func TestRate(t *testing.T) {
 		time.Sleep(20 * time.Millisecond)
 	}
 }
+
+func TestAggregate(t *testing.T) {
+	err := config.Init("../config.yaml")
+	if err != nil {
+		t.Error(err)
+	}
+	t.Logf("%+v", config.Cfg)
+
+	mongo := dao.NewMongo(&config.Cfg)
+	res := mongo.Aggregate("abc")
+
+	t.Logf("%+v", res)
+}

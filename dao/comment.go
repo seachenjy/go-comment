@@ -11,12 +11,19 @@ import (
 type Dao interface {
 	AddComment(*Comment) bool
 	GetComments(s SourceID, offset, limit int64) []*Comment
+	Aggregate(s SourceID) *CommentStatistics
 }
 
 //SourceID comment source
 //source id can build from page params or url
 //it's must be unique identification
 type SourceID string
+
+//CommentStatistics statistics comments
+type CommentStatistics struct {
+	Count int     `bson:"count"`
+	Grade float32 `bson:"grade"`
+}
 
 //Comment mongo fields
 type Comment struct {
@@ -53,6 +60,8 @@ func (c *Comment) Save(d Dao) bool {
 }
 
 //Get get comments by source id
-func Get(s SourceID, d Dao, offset, limit int64) []*Comment {
-	return d.GetComments(s, offset, limit)
+func Get(s SourceID, d Dao, offset, limit int64) ([]*Comment, *CommentStatistics) {
+	comments := d.GetComments(s, offset, limit)
+	aggregate := d.Aggregate(s)
+	return comments, aggregate
 }

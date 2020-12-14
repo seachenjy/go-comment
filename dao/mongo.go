@@ -60,6 +60,32 @@ func (m *MongoService) GetComments(s SourceID, offset, limit int64) []*Comment {
 	return cs
 }
 
+//Aggregate all comments count and average score
+func (m *MongoService) Aggregate(s SourceID) *CommentStatistics {
+	query := []bson.M{
+		{"$match": bson.M{
+			"source_id": bson.M{"$eq": s},
+		}},
+		{"$group": bson.M{
+			"_id":   nil,
+			"count": bson.M{"$sum": 1},
+			"grade": bson.M{"$avg": "$grade"},
+		}},
+	}
+	var showsWithInfo CommentStatistics
+	ctx := context.Background()
+	res, err := m.collection.Aggregate(ctx, query)
+	if err != nil {
+		log.GetLogger().Error(err)
+	} else {
+		err = res.All(ctx, &showsWithInfo)
+		if err != nil {
+			log.GetLogger().Error(err)
+		}
+	}
+	return &showsWithInfo
+}
+
 //NewMongo return a new mongodb connect service
 func NewMongo(cfg *config.Config) *MongoService {
 	lock.Lock()
