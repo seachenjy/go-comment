@@ -22,7 +22,7 @@ type SourceID string
 //CommentStatistics statistics comments
 type CommentStatistics struct {
 	Count int     `bson:"count"`
-	Grade float32 `bson:"grade"`
+	Grade float64 `bson:"grade"`
 }
 
 //Comment mongo fields

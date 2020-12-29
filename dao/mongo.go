@@ -72,9 +72,10 @@ func (m *MongoService) Aggregate(s SourceID) *CommentStatistics {
 			"grade": bson.M{"$avg": "$grade"},
 		}},
 	}
-	var showsWithInfo CommentStatistics
+	var showsWithInfo []CommentStatistics
 	ctx := context.Background()
 	res, err := m.collection.Aggregate(ctx, query)
+	fmt.Printf("%vv", res)
 	if err != nil {
 		log.GetLogger().Error(err)
 	} else {
@@ -83,7 +84,7 @@ func (m *MongoService) Aggregate(s SourceID) *CommentStatistics {
 			log.GetLogger().Error(err)
 		}
 	}
-	return &showsWithInfo
+	return &showsWithInfo[0]
 }
 
 //NewMongo return a new mongodb connect service
